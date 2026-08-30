@@ -1,4 +1,4 @@
-package com.homework.library.service;
+package com.homework.library.unit.service;
 
 import com.homework.library.service.dto.book.BookResponse;
 import com.homework.library.service.entity.Book;
@@ -38,7 +38,7 @@ class BookServiceTest {
 				.id(1L)
 				.title("Meditations")
 				.author("Marcus Aurelius")
-				.borrower(borrower)
+				.borrower(null)
 				.build();
 
 		// When
@@ -50,7 +50,7 @@ class BookServiceTest {
 		assertThat(result.getFirst().getId()).isEqualTo(1L);
 		assertThat(result.getFirst().getTitle()).isEqualTo("Meditations");
 		assertThat(result.getFirst().getAuthor()).isEqualTo("Marcus Aurelius");
-		assertThat(result.getFirst().getBorrowerId()).isEqualTo(1L);
+		assertThat(result.getFirst().getBorrowerId()).isNull();
 		verify(bookRepository).findAll();
 	}
 

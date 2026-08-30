@@ -23,7 +23,7 @@ public class BookService {
     public List<BookResponse> getBooks() {
         return bookRepository.findAll()
                 .stream()
-                .filter(book -> book.getBorrower() != null)
+                .filter(book -> book.getBorrower() == null)
                 .map(BookResponse::from)
                 .toList();
     }
