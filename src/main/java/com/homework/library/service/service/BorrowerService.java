@@ -44,8 +44,6 @@ public class BorrowerService {
                 .orElseThrow(BorrowerNotFoundException::new);
 
         return BorrowedBooksResponse.builder()
-                .borrowerId(borrower.getId())
-                .borrower(borrower.getBorrower())
                 .books(borrower.getBorrowedBooks().stream()
                         .map(BookResponse::from)
                         .toList())

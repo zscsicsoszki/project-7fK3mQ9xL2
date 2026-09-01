@@ -10,13 +10,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BookInvalidStateException.class)
-    public ResponseEntity<Map<String, String>> handleBookInvalidState(
-            BookInvalidStateException exception) {
-
-        return createResponseEntity(HttpStatus.CONFLICT, exception);
-    }
-
     @ExceptionHandler(BookNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleBookNotFound(
             BookNotFoundException exception) {

@@ -12,7 +12,5 @@ import java.util.List;
 @AllArgsConstructor
 public class BorrowedBooksResponse {
 
-    private Long borrowerId;
-    private String borrower;
     private List<BookResponse> books;
 }
