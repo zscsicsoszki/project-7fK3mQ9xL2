@@ -24,6 +24,13 @@ public class GlobalExceptionHandler {
         return createResponseEntity(HttpStatus.NOT_FOUND, exception);
     }
 
+    @ExceptionHandler(BookAlreadyBorrowedException.class)
+    public ResponseEntity<Map<String, String>> handleBookAlreadyBorrowed(
+            BookAlreadyBorrowedException exception
+    ) {
+        return createResponseEntity(HttpStatus.CONFLICT, exception);
+    }
+
     private ResponseEntity<Map<String, String>> createResponseEntity(HttpStatus status, RuntimeException exception) {
         return ResponseEntity
                 .status(status)

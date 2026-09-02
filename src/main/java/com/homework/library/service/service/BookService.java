@@ -4,6 +4,7 @@ import com.homework.library.service.dto.book.AddBookRequest;
 import com.homework.library.service.dto.book.BookResponse;
 import com.homework.library.service.entity.Book;
 import com.homework.library.service.entity.Borrower;
+import com.homework.library.service.exception.BookAlreadyBorrowedException;
 import com.homework.library.service.exception.BookNotFoundException;
 import com.homework.library.service.exception.BorrowerNotFoundException;
 import com.homework.library.service.repository.BookRepository;
@@ -45,6 +46,8 @@ public class BookService {
                     .orElseThrow(BorrowerNotFoundException::new);
 
             book.setBorrower(borrower);
+        } else if (!book.getBorrower().getId().equals(borrowerId)) {
+            throw new BookAlreadyBorrowedException(book.getId(), borrowerId);
         } else {
             book.setBorrower(null);
         }

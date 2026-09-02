@@ -84,7 +84,6 @@ public class BookControllerTest {
                 .author(BOOK_AUTHOR)
                 .borrowerId(BORROWER_ID)
                 .build();
-
         when(bookService.borrowBook(BOOK_ID, BORROWER_ID)).thenReturn(borrowedBook);
 
         // When

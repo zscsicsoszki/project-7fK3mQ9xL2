@@ -4,6 +4,7 @@ import com.homework.library.service.dto.book.AddBookRequest;
 import com.homework.library.service.dto.book.BookResponse;
 import com.homework.library.service.entity.Book;
 import com.homework.library.service.entity.Borrower;
+import com.homework.library.service.exception.BookAlreadyBorrowedException;
 import com.homework.library.service.exception.BookNotFoundException;
 import com.homework.library.service.exception.BorrowerNotFoundException;
 import com.homework.library.service.repository.BookRepository;
@@ -164,6 +165,20 @@ class BookServiceTest {
         verify(bookRepository).findById(AVAILABLE_BOOK_ID);
         verify(borrowerRepository).findById(BORROWER_ID);
         verify(bookRepository, never()).save(any(Book.class));
+    }
 
+    @Test
+    void shouldThrowExceptionWhenBookIsAlreadyBorrowedByAnotherBorrower() {
+        // Given
+        Long requestedBorrowerId = 3L;
+        when(bookRepository.findById(UNAVAILABLE_BOOK_ID)).thenReturn(Optional.of(book_2));
+
+        // Then
+        assertThatThrownBy(() -> bookService.borrowBook(UNAVAILABLE_BOOK_ID, requestedBorrowerId))
+                .isInstanceOf(BookAlreadyBorrowedException.class);
+
+        verify(bookRepository).findById(UNAVAILABLE_BOOK_ID);
+        verify(bookRepository, never()).save(any(Book.class));
+        verifyNoInteractions(borrowerRepository);
     }
 }
