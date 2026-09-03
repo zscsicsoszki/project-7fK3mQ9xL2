@@ -9,6 +9,8 @@ import com.homework.library.service.exception.BookNotFoundException;
 import com.homework.library.service.exception.BorrowerNotFoundException;
 import com.homework.library.service.repository.BookRepository;
 import com.homework.library.service.repository.BorrowerRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final BorrowerRepository borrowerRepository;
+    private final Counter bookBorrowCounter;
 
     public List<BookResponse> getBooks() {
         return bookRepository.findAll()
@@ -38,14 +41,16 @@ public class BookService {
         return BookResponse.from(bookRepository.save(book));
     }
 
+    @Observed(name = "books.borrow")
     public BookResponse borrowBook(Long id, Long borrowerId) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(BookNotFoundException::new);
+
         if (book.getBorrower() == null) {
             Borrower borrower = borrowerRepository.findById(borrowerId)
                     .orElseThrow(BorrowerNotFoundException::new);
-
             book.setBorrower(borrower);
+            bookBorrowCounter.increment();
         } else if (!book.getBorrower().getId().equals(borrowerId)) {
             throw new BookAlreadyBorrowedException(book.getId(), borrowerId);
         } else {

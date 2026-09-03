@@ -12,8 +12,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BookNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleBookNotFound(
-            BookNotFoundException exception) {
-
+            BookNotFoundException exception
+    ) {
         return createResponseEntity(HttpStatus.NOT_FOUND, exception);
     }
 

@@ -10,6 +10,7 @@ import com.homework.library.service.exception.BorrowerNotFoundException;
 import com.homework.library.service.repository.BookRepository;
 import com.homework.library.service.repository.BorrowerRepository;
 import com.homework.library.service.service.BookService;
+import io.micrometer.core.instrument.Counter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,9 @@ class BookServiceTest {
 
     @Mock
     private BorrowerRepository borrowerRepository;
+
+    @Mock
+    private Counter bookBorrowCounter;
 
     @InjectMocks
     private BookService bookService;
@@ -168,7 +172,7 @@ class BookServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenBookIsAlreadyBorrowedByAnotherBorrower() {
+    void borrowBook_shouldThrowExceptionWhenBookIsAlreadyBorrowedByAnotherBorrower() {
         // Given
         Long requestedBorrowerId = 3L;
         when(bookRepository.findById(UNAVAILABLE_BOOK_ID)).thenReturn(Optional.of(book_2));
