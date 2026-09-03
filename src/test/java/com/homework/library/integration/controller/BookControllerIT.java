@@ -100,4 +100,60 @@ public class BookControllerIT extends BaseIntegration {
                 .orElseThrow();
         assertThat(book.getBorrower()).isNull();
     }
+
+    @Test
+    void shouldReturnNotFoundWhenBookDoesNotExist() throws Exception {
+        // Given
+        Long bookId = 999L;
+        Long borrowerId = 1L;
+
+        // When / Then
+        mockMvc.perform(patch("/books/{id}/borrow", bookId)
+                .param("borrower_id", borrowerId.toString()))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message", is("Requested book is not found.")));
+
+        // Then
+        assertThat(bookRepository.findById(bookId)).isEmpty();
+    }
+
+
+    @Test
+    void shouldReturnNotFoundWhenBorrowerDoesNotExist() throws Exception {
+        // Given
+        Long bookId = 1L;
+        Long borrowerId = 999L;
+
+        // When / Then
+        mockMvc.perform(patch("/books/{id}/borrow", bookId)
+                .param("borrower_id", borrowerId.toString()))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message", is("Requested borrower is not found.")));
+
+        // Then
+        Book book = bookRepository.findById(bookId)
+            .orElseThrow();
+        assertThat(book.getBorrower()).isNull();
+    }
+
+
+    @Test
+    void shouldReturnConflictWhenBookIsAlreadyBorrowedByAnotherBorrower() throws Exception {
+        // Given
+        Long bookId = 2L;
+        Long borrowerId = 2L;
+
+        // When / Then
+        mockMvc.perform(patch("/books/{id}/borrow", bookId)
+                .param("borrower_id", borrowerId.toString()))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message",
+                is("Book with id 2 is already borrowed by another borrower with id 2")));
+
+        // Then
+        Book book = bookRepository.findById(bookId)
+            .orElseThrow();
+        assertThat(book.getBorrower()).isNotNull();
+        assertThat(book.getBorrower().getId()).isEqualTo(1L);
+    }
 }
