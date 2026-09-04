@@ -27,6 +27,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class BorrowerServiceTest {
 
+    private static final Long AVAILABLE_BOOK_ID = 1L;
+    private static final Long BORROWER_ID = 1L;
+    private static final String BOOK_TITLE_1 = "Meditations";
+    private static final String BOOK_AUTHOR_1 = "Marcus Aurelius";
+    private static final String BORROWER = "Adam Smith";
+
     @Mock
     private BorrowerRepository borrowerRepository;
 
@@ -39,14 +45,14 @@ public class BorrowerServiceTest {
     @BeforeEach
     void setUp() {
         borrower = Borrower.builder()
-                .id(1L)
-                .borrower("Adam Smith")
+                .id(BORROWER_ID)
+                .borrower(BORROWER)
                 .borrowedBooks(new ArrayList<>())
                 .build();
         book = Book.builder()
                 .id(1L)
-                .title("Meditations")
-                .author("Marcus Aurelius")
+                .title(BOOK_TITLE_1)
+                .author(BOOK_AUTHOR_1)
                 .borrower(borrower)
                 .build();
     }
@@ -54,88 +60,87 @@ public class BorrowerServiceTest {
     @Test
     void getBorrower_shouldReturnBorrowerWithoutBorrowedBooks() {
         // Given
-        when(borrowerRepository.findById(1L))
+        when(borrowerRepository.findById(BORROWER_ID))
                 .thenReturn(Optional.of(borrower));
 
         // When
-        BorrowerResponse result = borrowerService.getBorrower(1L);
+        BorrowerResponse result = borrowerService.getBorrower(BORROWER_ID);
 
         // Then
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getBorrower()).isEqualTo("Adam Smith");
-        verify(borrowerRepository).findById(1L);
+        assertThat(result.getId()).isEqualTo(BORROWER_ID);
+        assertThat(result.getBorrower()).isEqualTo(BORROWER);
+        verify(borrowerRepository).findById(BORROWER_ID);
     }
 
     @Test
     void getBorrower_shouldThrowExceptionWhenBorrowerNotFound() {
         // When
-        when(borrowerRepository.findById(1L))
+        when(borrowerRepository.findById(BORROWER_ID))
                 .thenReturn(Optional.empty());
 
         // Then
-        assertThatThrownBy(() -> borrowerService.getBorrower(1L))
+        assertThatThrownBy(() -> borrowerService.getBorrower(BORROWER_ID))
                 .isInstanceOf(BorrowerNotFoundException.class);
-        verify(borrowerRepository).findById(1L);
+        verify(borrowerRepository).findById(BORROWER_ID);
     }
 
     @Test
     void getBorrowedBooks_shouldReturnBorrowedBooksForBorrower() {
         // Given
         borrower.getBorrowedBooks().add(book);
-        when(borrowerRepository.findById(1L))
+        when(borrowerRepository.findById(BORROWER_ID))
                 .thenReturn(Optional.of(borrower));
 
         // When
-        BorrowedBooksResponse result = borrowerService.getBorrowedBooks(1L);
+        BorrowedBooksResponse result = borrowerService.getBorrowedBooks(BORROWER_ID);
 
         // Then
         assertThat(result.getBooks()).hasSize(1);
-        assertThat(result.getBooks().getFirst().getId()).isEqualTo(1L);
-        assertThat(result.getBooks().getFirst().getTitle()).isEqualTo("Meditations");
-        assertThat(result.getBooks().getFirst().getAuthor()).isEqualTo("Marcus Aurelius");
-        assertThat(result.getBooks().getFirst().getBorrowerId()).isEqualTo(1L);
-        verify(borrowerRepository).findById(1L);
+        assertThat(result.getBooks().getFirst().getId()).isEqualTo(AVAILABLE_BOOK_ID);
+        assertThat(result.getBooks().getFirst().getTitle()).isEqualTo(BOOK_TITLE_1);
+        assertThat(result.getBooks().getFirst().getAuthor()).isEqualTo(BOOK_AUTHOR_1);
+        assertThat(result.getBooks().getFirst().getBorrowerId()).isEqualTo(BORROWER_ID);
+        verify(borrowerRepository).findById(BORROWER_ID);
     }
 
     @Test
     void getBorrowedBooks_shouldReturnEmptyListWhenBorrowerHasNoBooks() {
         // Given
-        when(borrowerRepository.findById(1L))
+        when(borrowerRepository.findById(BORROWER_ID))
                 .thenReturn(Optional.of(borrower));
 
         // When
-        BorrowedBooksResponse result = borrowerService.getBorrowedBooks(1L);
+        BorrowedBooksResponse result = borrowerService.getBorrowedBooks(BORROWER_ID);
 
         // Then
         assertThat(result.getBooks()).isEmpty();
-        verify(borrowerRepository).findById(1L);
+        verify(borrowerRepository).findById(BORROWER_ID);
     }
 
     @Test
     void getBorrowedBooks_shouldThrowExceptionWhenBorrowerNotFound() {
         // Given
-        when(borrowerRepository.findById(1L))
+        when(borrowerRepository.findById(BORROWER_ID))
                 .thenReturn(Optional.empty());
 
         // Then
-        assertThatThrownBy(() -> borrowerService.getBorrowedBooks(1L))
+        assertThatThrownBy(() -> borrowerService.getBorrowedBooks(BORROWER_ID))
                 .isInstanceOf(BorrowerNotFoundException.class);
-        verify(borrowerRepository).findById(1L);
+        verify(borrowerRepository).findById(BORROWER_ID);
     }
 
     @Test
     void createBorrower_shouldCreateBorrower() {
         // Given
-        CreateBorrowerRequest request = new CreateBorrowerRequest("Adam Smith");
+        CreateBorrowerRequest request = new CreateBorrowerRequest(BORROWER);
         when(borrowerRepository.save(any(Borrower.class))).thenReturn(borrower);
 
         // When
         BorrowerResponse result = borrowerService.createBorrower(request);
 
         // Then
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getBorrower()).isEqualTo("Adam Smith");
+        assertThat(result.getId()).isEqualTo(BORROWER_ID);
+        assertThat(result.getBorrower()).isEqualTo(BORROWER);
         verify(borrowerRepository).save(any(Borrower.class));
     }
-
 }

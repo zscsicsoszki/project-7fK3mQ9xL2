@@ -36,6 +36,7 @@ class BookServiceTest {
     private static final String BOOK_TITLE_2 = "Dune";
     private static final String BOOK_AUTHOR_1 = "Marcus Aurelius";
     private static final String BOOK_AUTHOR_2 = "Frank Herbert";
+    private static final String BORROWER = "Adam Smith";
 
     @Mock
     private BookRepository bookRepository;
@@ -56,17 +57,17 @@ class BookServiceTest {
     @BeforeEach
     void setUp() {
         borrower = Borrower.builder()
-                .id(1L)
-                .borrower("Adam Smith")
+                .id(BORROWER_ID)
+                .borrower(BORROWER)
                 .build();
         book_1 = Book.builder()
-                .id(1L)
+                .id(AVAILABLE_BOOK_ID)
                 .title(BOOK_TITLE_1)
                 .author(BOOK_AUTHOR_1)
                 .borrower(null)
                 .build();
         book_2 = Book.builder()
-                .id(2L)
+                .id(UNAVAILABLE_BOOK_ID)
                 .title(BOOK_TITLE_2)
                 .author(BOOK_AUTHOR_2)
                 .borrower(borrower)
@@ -130,7 +131,7 @@ class BookServiceTest {
     @Test
     void borrowBook_shouldReturnBookWhenBookExistsButNoBorrower() {
         // Given
-        when(bookRepository.findById(2L)).thenReturn(Optional.ofNullable(book_2));
+        when(bookRepository.findById(UNAVAILABLE_BOOK_ID)).thenReturn(Optional.ofNullable(book_2));
         when(bookRepository.save(any(Book.class))).thenReturn(book_2);
 
         // When
@@ -141,7 +142,7 @@ class BookServiceTest {
         assertThat(result.getTitle()).isEqualTo(BOOK_TITLE_2);
         assertThat(result.getAuthor()).isEqualTo(BOOK_AUTHOR_2);
         assertThat(result.getBorrowerId()).isNull();
-        verify(bookRepository).findById(2L);
+        verify(bookRepository).findById(UNAVAILABLE_BOOK_ID);
         verify(bookRepository).save(any(Book.class));
     }
 
@@ -150,7 +151,7 @@ class BookServiceTest {
         // Given
         when(bookRepository.findById(AVAILABLE_BOOK_ID)).thenReturn(Optional.empty());
 
-        // Then
+        // When / Then
         assertThatThrownBy(() -> bookService.borrowBook(AVAILABLE_BOOK_ID, BORROWER_ID))
                 .isInstanceOf(BookNotFoundException.class);
         verify(bookRepository).findById(AVAILABLE_BOOK_ID);
@@ -163,7 +164,7 @@ class BookServiceTest {
         when(bookRepository.findById(AVAILABLE_BOOK_ID)).thenReturn(Optional.of(book_1));
         when(borrowerRepository.findById(BORROWER_ID)).thenReturn(Optional.empty());
 
-        // Then
+        // When / Then
         assertThatThrownBy(() -> bookService.borrowBook(AVAILABLE_BOOK_ID, BORROWER_ID))
                 .isInstanceOf(BorrowerNotFoundException.class);
         verify(bookRepository).findById(AVAILABLE_BOOK_ID);
@@ -177,7 +178,7 @@ class BookServiceTest {
         Long requestedBorrowerId = 3L;
         when(bookRepository.findById(UNAVAILABLE_BOOK_ID)).thenReturn(Optional.of(book_2));
 
-        // Then
+        // When / Then
         assertThatThrownBy(() -> bookService.borrowBook(UNAVAILABLE_BOOK_ID, requestedBorrowerId))
                 .isInstanceOf(BookAlreadyBorrowedException.class);
 

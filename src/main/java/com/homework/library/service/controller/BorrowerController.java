@@ -19,8 +19,7 @@ public class BorrowerController {
     @Operation(summary = "Registers a new borrower")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public BorrowerResponse createBorrower(
-            @RequestBody CreateBorrowerRequest request) {
+    public BorrowerResponse createBorrower(@RequestBody CreateBorrowerRequest request) {
         return borrowerService.createBorrower(request);
     }
 
