@@ -17,6 +17,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class BorrowerControllerIT extends BaseIntegration {
 
+    private static final Long BORROWER_ID_WITH_BOOKS = 1L;
+    private static final Long BORROWER_ID_WITHOUT_BOOKS = 2L;
+    private static final Long BORROWER_DOES_NOT_EXIST = 100L;
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -47,11 +51,8 @@ public class BorrowerControllerIT extends BaseIntegration {
 
     @Test
     void getBorrower_shouldReturnBorrowerWhenExists() throws Exception {
-        // Given
-        Long borrowerId = 1L;
-
         // When / Then
-        mockMvc.perform(get("/borrowers/{id}", borrowerId))
+        mockMvc.perform(get("/borrowers/{id}", BORROWER_ID_WITH_BOOKS))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.borrower", is("Adam Smith")));
@@ -59,27 +60,21 @@ public class BorrowerControllerIT extends BaseIntegration {
 
     @Test
     void getBorrower_shouldReturnNotFoundWhenBorrowerDoesNotExist() throws Exception {
-        // Given
-        Long borrowerId = 999L;
-
         // When / Then
-        mockMvc.perform(get("/borrowers/{id}", borrowerId))
+        mockMvc.perform(get("/borrowers/{id}", BORROWER_DOES_NOT_EXIST))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message",
                 is("Requested borrower is not found.")));
 
         // Then
-        assertThat(borrowerRepository.findById(borrowerId))
+        assertThat(borrowerRepository.findById(BORROWER_DOES_NOT_EXIST))
             .isEmpty();
     }
 
     @Test
     void getBorrowedBooks_shouldReturnBorrowedBooksForBorrower() throws Exception {
-        // Given
-        Long borrowerId = 1L;
-
         // When / Then
-        mockMvc.perform(get("/borrowers/{id}/books", borrowerId))
+        mockMvc.perform(get("/borrowers/{id}/books", BORROWER_ID_WITH_BOOKS))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.books", hasSize(1)))
             .andExpect(jsonPath("$.books[0].id", is(2)))
@@ -90,28 +85,22 @@ public class BorrowerControllerIT extends BaseIntegration {
 
     @Test
     void getBorrowedBooks_shouldReturnEmptyListWhenBorrowerHasNoBooks() throws Exception {
-        // Given
-        Long borrowerId = 2L;
-
         // When / Then
-        mockMvc.perform(get("/borrowers/{id}/books", borrowerId))
+        mockMvc.perform(get("/borrowers/{id}/books", BORROWER_ID_WITHOUT_BOOKS))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.books", hasSize(0)));
     }
 
     @Test
     void getBorrowedBooks_shouldReturnNotFoundWhenBorrowerDoesNotExist() throws Exception {
-        // Given
-        Long borrowerId = 999L;
-
         // When / Then
-        mockMvc.perform(get("/borrowers/{id}/books", borrowerId))
+        mockMvc.perform(get("/borrowers/{id}/books", BORROWER_DOES_NOT_EXIST))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message",
                 is("Requested borrower is not found.")));
 
         // Then
-        assertThat(borrowerRepository.findById(borrowerId))
+        assertThat(borrowerRepository.findById(BORROWER_DOES_NOT_EXIST))
             .isEmpty();
     }
 }

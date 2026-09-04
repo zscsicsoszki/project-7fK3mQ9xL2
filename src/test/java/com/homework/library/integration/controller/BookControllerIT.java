@@ -17,6 +17,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class BookControllerIT extends BaseIntegration {
 
+    private static final Long BOOK_ID_WITHOUT_BORROWER = 1L;
+    private static final Long BOOK_ID_WITH_BORROWER = 2L;
+    private static final Long BOOK_DOES_NOT_EXIST = 100L;
+    private static final Long BORROWER_ID_WITHOUT_BOOKS = 1L;
+    private static final Long BORROWER_ID_WITH_BOOKS = 2L;
+    private static final Long BORROWER_DOES_NOT_EXIST = 100L;
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -59,13 +66,9 @@ public class BookControllerIT extends BaseIntegration {
 
     @Test
     void shouldBorrowAvailableBook() throws Exception {
-        // Given
-        Long bookId = 1L;
-        Long borrowerId = 1L;
-
         // When / Then
-        mockMvc.perform(patch("/books/{id}/borrow", bookId)
-                        .param("borrower_id", borrowerId.toString()))
+        mockMvc.perform(patch("/books/{id}/borrow", BOOK_ID_WITHOUT_BORROWER)
+                        .param("borrower_id", BORROWER_ID_WITHOUT_BOOKS.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.title", is("A Game of Thrones")))
@@ -73,22 +76,18 @@ public class BookControllerIT extends BaseIntegration {
                 .andExpect(jsonPath("$.borrowerId", is(1)));
 
         // Then
-        Book book = bookRepository.findById(bookId)
+        Book book = bookRepository.findById(BOOK_ID_WITHOUT_BORROWER)
                 .orElseThrow();
         assertThat(book.getBorrower()).isNotNull();
-        assertThat(book.getBorrower().getId()).isEqualTo(borrowerId);
+        assertThat(book.getBorrower().getId()).isEqualTo(BORROWER_ID_WITHOUT_BOOKS);
     }
 
 
     @Test
     void shouldReturnBorrowedBookToAvailable() throws Exception {
-        // Given
-        Long bookId = 2L;
-        Long borrowerId = 1L;
-
         // When / Then
-        mockMvc.perform(patch("/books/{id}/borrow", bookId)
-                        .param("borrower_id", borrowerId.toString()))
+        mockMvc.perform(patch("/books/{id}/borrow", BOOK_ID_WITH_BORROWER)
+                        .param("borrower_id", BORROWER_ID_WITHOUT_BOOKS.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(2)))
                 .andExpect(jsonPath("$.title", is("The Godfather")))
@@ -96,42 +95,34 @@ public class BookControllerIT extends BaseIntegration {
                 .andExpect(jsonPath("$.borrowerId").doesNotExist());
 
         // Then
-        Book book = bookRepository.findById(bookId)
+        Book book = bookRepository.findById(BOOK_ID_WITH_BORROWER)
                 .orElseThrow();
         assertThat(book.getBorrower()).isNull();
     }
 
     @Test
     void shouldReturnNotFoundWhenBookDoesNotExist() throws Exception {
-        // Given
-        Long bookId = 999L;
-        Long borrowerId = 1L;
-
         // When / Then
-        mockMvc.perform(patch("/books/{id}/borrow", bookId)
-                .param("borrower_id", borrowerId.toString()))
+        mockMvc.perform(patch("/books/{id}/borrow", BOOK_DOES_NOT_EXIST)
+                .param("borrower_id", BORROWER_ID_WITHOUT_BOOKS.toString()))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message", is("Requested book is not found.")));
 
         // Then
-        assertThat(bookRepository.findById(bookId)).isEmpty();
+        assertThat(bookRepository.findById(BOOK_DOES_NOT_EXIST)).isEmpty();
     }
 
 
     @Test
     void shouldReturnNotFoundWhenBorrowerDoesNotExist() throws Exception {
-        // Given
-        Long bookId = 1L;
-        Long borrowerId = 999L;
-
         // When / Then
-        mockMvc.perform(patch("/books/{id}/borrow", bookId)
-                .param("borrower_id", borrowerId.toString()))
+        mockMvc.perform(patch("/books/{id}/borrow", BOOK_ID_WITHOUT_BORROWER)
+                .param("borrower_id", BORROWER_DOES_NOT_EXIST.toString()))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message", is("Requested borrower is not found.")));
 
         // Then
-        Book book = bookRepository.findById(bookId)
+        Book book = bookRepository.findById(BOOK_ID_WITHOUT_BORROWER)
             .orElseThrow();
         assertThat(book.getBorrower()).isNull();
     }
@@ -139,21 +130,17 @@ public class BookControllerIT extends BaseIntegration {
 
     @Test
     void shouldReturnConflictWhenBookIsAlreadyBorrowedByAnotherBorrower() throws Exception {
-        // Given
-        Long bookId = 2L;
-        Long borrowerId = 2L;
-
         // When / Then
-        mockMvc.perform(patch("/books/{id}/borrow", bookId)
-                .param("borrower_id", borrowerId.toString()))
+        mockMvc.perform(patch("/books/{id}/borrow", BOOK_ID_WITH_BORROWER)
+                .param("borrower_id", BORROWER_ID_WITH_BOOKS.toString()))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.message",
-                is("Book with id 2 is already borrowed by another borrower with id 2")));
+                is("Book with id 2 is already borrowed by someone.")));
 
         // Then
-        Book book = bookRepository.findById(bookId)
+        Book book = bookRepository.findById(BOOK_ID_WITH_BORROWER)
             .orElseThrow();
         assertThat(book.getBorrower()).isNotNull();
-        assertThat(book.getBorrower().getId()).isEqualTo(1L);
+        assertThat(book.getBorrower().getId()).isEqualTo(BORROWER_ID_WITHOUT_BOOKS);
     }
 }

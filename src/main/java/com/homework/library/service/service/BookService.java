@@ -52,7 +52,7 @@ public class BookService {
             book.setBorrower(borrower);
             bookBorrowCounter.increment();
         } else if (!book.getBorrower().getId().equals(borrowerId)) {
-            throw new BookAlreadyBorrowedException(book.getId(), borrowerId);
+            throw new BookAlreadyBorrowedException(book.getId());
         } else {
             book.setBorrower(null);
         }

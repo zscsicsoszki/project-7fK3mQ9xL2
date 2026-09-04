@@ -12,28 +12,28 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BookNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleBookNotFound(
-            BookNotFoundException exception
+        BookNotFoundException exception
     ) {
         return createResponseEntity(HttpStatus.NOT_FOUND, exception);
     }
 
     @ExceptionHandler(BorrowerNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleBorrowerNotFound(
-            BorrowerNotFoundException exception
+        BorrowerNotFoundException exception
     ) {
         return createResponseEntity(HttpStatus.NOT_FOUND, exception);
     }
 
     @ExceptionHandler(BookAlreadyBorrowedException.class)
     public ResponseEntity<Map<String, String>> handleBookAlreadyBorrowed(
-            BookAlreadyBorrowedException exception
+        BookAlreadyBorrowedException exception
     ) {
         return createResponseEntity(HttpStatus.CONFLICT, exception);
     }
 
     private ResponseEntity<Map<String, String>> createResponseEntity(HttpStatus status, RuntimeException exception) {
         return ResponseEntity
-                .status(status)
-                .body(Map.of("message", exception.getMessage()));
+            .status(status)
+            .body(Map.of("message", exception.getMessage()));
     }
 }
